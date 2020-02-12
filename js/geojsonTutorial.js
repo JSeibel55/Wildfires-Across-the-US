@@ -1,13 +1,17 @@
+// .map= initialize the map on the "map" div with a given center and zoom
+// .setView= sets the view of the map (geographical center and zoom) 
 var mymap = L.map('mapid').setView([39.75621, -104.99404], 6);
 
+// .tileLayer= load and display tile layers on the map
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
     id: 'mapbox/streets-v11',
     accessToken: "pk.eyJ1IjoianNlaWJlbDU1IiwiYSI6ImNrNmpxc3pzYTAwZXIzanZ4Nm5scHAzam0ifQ.5NLBHlevG0PL-E13Yax9NA"
-}).addTo(mymap);
+}).addTo(mymap); // .addTo= displays previous function output to the map div
 
 //// Add JSON to the map ////
+// .geoJSON= creates a GeoJSON layer
 var myLayer = L.geoJSON().addTo(mymap);
 
 // var geojsonFeature = {
@@ -109,12 +113,13 @@ var geojsonMarkerOptions = {
 
 L.geoJSON(someGeojsonFeature, {
     pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, geojsonMarkerOptions);
+        return L.circleMarker(latlng, geojsonMarkerOptions); // .circleMarker= creates a circle marker object given a geographical point, and an optional options object
     }
 }).addTo(mymap);
 
 
 //// On Each Feature ////
+// onEachFeature= called once for each created Feature, can attach events and popups to features.
 function onEachFeature(feature, layer) {
     // does this feature have a property named popupContent?
     if (feature.properties && feature.properties.popupContent) {
