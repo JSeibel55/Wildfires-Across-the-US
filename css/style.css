@@ -1,1 +1,5 @@
 #mapid {height: 98vh;}
+
+.leaflet-popup-content p {
+    margin: 0.2em 0;
+}
