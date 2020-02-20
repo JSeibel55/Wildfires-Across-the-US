@@ -4,7 +4,7 @@
 var map;
 var minValue;
 
-//Step 1: function to instantiate the Leaflet map
+//Function to instantiate the Leaflet map
 function createMap(){
     //create the map
     map = L.map('mapid', {
@@ -56,7 +56,7 @@ function calcPropRadius(attValue) {
     return radius;
 };
 
-//function to convert markers to circle markers
+//Convert markers to circle markers
 function pointToLayer(feature, latlng){
     // Determine which attribute to visualize with proportional symbols
     var attribute = "2018 Acres Burned";
@@ -107,15 +107,33 @@ function createPropSymbols(data){
     }).addTo(map);
 };
 
+// Create new sequence controls
+function createSequenceControls(){
+    //create range input element (slider)
+    $('#panel').append('<input class="range-slider" type="range">');
+
+    //set slider attributes
+    $('.range-slider').attr({
+        max: 10,
+        min: 0,
+        value: 0,
+        step: 1
+    });
+
+    $('#panel').append('<button class="step" id="reverse">Reverse</button>');
+    $('#panel').append('<button class="step" id="forward">Forward</button>');
+    $('#reverse').html('<img src="img/step-backward-solid.svg">');
+    $('#forward').html('<img src="img/step-backward-solid.svg">');
+};
+
 //Import GeoJSON data
-function getData(){
+function getData(map){
     //load the data
     $.getJSON("data/StatesFireData.geojson", function(response){
-        //calculate minimum data value
         minValue = calcMinValue(response);
-
-        //call function to create proportional symbols
+        //add symbols and UI elements
         createPropSymbols(response);
+        createSequenceControls();
     });
 };
 
