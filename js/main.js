@@ -22,7 +22,6 @@ function createMap(){
 };
 
 function calcMinValue(data){
-     
     //create empty array to store all data values
     var allValues = [];
     
@@ -45,22 +44,24 @@ function calcMinValue(data){
 }
 
 //calculate the radius of each proportional symbol
-function calcPropRadius(attValue) {
-    
+function calcPropRadius(attValue) {    
     //constant factor adjusts symbol sizes evenly
     var minRadius = 1;
     
     //Flannery Appearance Compensation formula
-    var radius = 1.0083 * Math.pow(attValue/minValue,0.5715) * minRadius
+    var radius = 1.0083 * Math.pow(attValue/minValue,0.5715) * minRadius;
 
     return radius;
 };
 
 //Convert markers to circle markers
-function pointToLayer(feature, latlng){
+function pointToLayer(feature, latlng, attributes){
     // Determine which attribute to visualize with proportional symbols
-    var attribute = "2018 Acres Burned";
-    var attribute2 = "2018 Number of Fires";
+    //var attribute = "2018 Acres Burned";
+    //var attribute2 = "2018 Number of Fires";
+    //Assign the current attribute based on the first index of the attributes array
+    var attribute = attributes[0];
+    //console.log(attribute);
 
     //create marker options
     var options = {
@@ -87,8 +88,8 @@ function pointToLayer(feature, latlng){
     //add formatted attribute to popup content string
     var year = attribute.split(" ")[0];
     popupContent += "<p><b>Acres burned in " + year + ":</b> " + feature.properties[attribute] + " acres</p>";
-    var year = attribute2.split(" ")[0];
-    popupContent += "<p><b>Number of Fires in " + year + ":</b> " + feature.properties[attribute2];
+    //var year = attribute2.split(" ")[0];
+    //popupContent += "<p><b>Number of Fires in " + year + ":</b> " + feature.properties[attribute2];
 
     //bind the popup to the circle marker
     layer.bindPopup(popupContent, {
@@ -100,15 +101,17 @@ function pointToLayer(feature, latlng){
 };
 
 // Add circle markers for point features to the map
-function createPropSymbols(data){
+function createPropSymbols(data, attributes){
     //create a Leaflet GeoJSON layer and add it to the map
     L.geoJson(data, {
-        pointToLayer: pointToLayer
+        pointToLayer: function(feature, latlng){
+            return pointToLayer(feature, latlng, attributes);
+        }
     }).addTo(map);
 };
 
 // Create new sequence controls
-function createSequenceControls(){
+function createSequenceControls(attributes){
     //create range input element (slider)
     $('#panel').append('<input class="range-slider" type="range">');
 
@@ -123,61 +126,95 @@ function createSequenceControls(){
     $('#panel').append('<button class="step" id="reverse">Reverse</button>');
     $('#panel').append('<button class="step" id="forward">Forward</button>');
     $('#reverse').html('<img src="img/step-backward-solid.svg">');
-    $('#forward').html('<img src="img/step-backward-solid.svg">');
+    $('#forward').html('<img src="img/step-forward-solid.svg">');
+
+    var index = $('.range-slider').val();
+     //Click listener for buttons
+    $('.step').click(function(){
+        //get the old index value
+        var index = $('.range-slider').val();
+
+        //Increment or decrement depending on button clicked
+        if ($(this).attr('id') == 'forward'){
+            index++;
+            //If past the last attribute, wrap around to first attribute
+            index = index > 10 ? 0 : index;
+        } else if ($(this).attr('id') == 'reverse'){
+            index--;
+            //If past the first attribute, wrap around to last attribute
+            index = index < 0 ? 10 : index;
+        };
+        //console.log(index);
+
+        //Update slider
+        $('.range-slider').val(index);
+        console.log(attributes[index]);
+        updatePropSymbols(attributes[index]);
+    });
+
+    //Input listener for slider
+    $('.range-slider').on('input', function(){
+        //Get the new index value
+        var index = $(this).val();
+        console.log(attributes[index]);
+        updatePropSymbols(attributes[index]);
+    }); 
+};
+
+// Resize proportional symbols according to new attribute values
+function updatePropSymbols(attribute){
+    map.eachLayer(function(layer){
+        if (layer.feature && layer.feature.properties[attribute]){
+            //access feature properties
+            var props = layer.feature.properties;
+
+            //update each feature's radius based on new attribute values
+            var radius = calcPropRadius(props[attribute]);
+            layer.setRadius(radius);
+
+            //add city to popup content string
+            var popupContent = "<p><b>State:</b> " + props.State + "</p>";
+
+            //add formatted attribute to panel content string
+            var year = attribute.split(" ")[0];
+            popupContent += "<p><b>Acres burned in " + year + ":</b> " + props[attribute] + " acres</p>";
+
+            //update popup content
+            popup = layer.getPopup();
+            popup.setContent(popupContent).update();
+        };
+    });
+};
+
+//Above Example 3.10...Step 3: build an attributes array from the data
+function processData(data){
+    //empty array to hold attributes
+    var attributes = [];
+
+    //properties of the first feature in the dataset
+    var properties = data.features[0].properties;
+
+    //push each attribute name into attributes array
+    for (var attribute in properties){
+        //only take attributes with acres values
+        if (attribute.indexOf("Acres") > -1){
+            attributes.push(attribute);
+        };
+    };
+
+    return attributes;
 };
 
 //Import GeoJSON data
 function getData(map){
     //load the data
     $.getJSON("data/StatesFireData.geojson", function(response){
+        //create an attributes array
+        var attributes = processData(response);
+            
         minValue = calcMinValue(response);
-        //add symbols and UI elements
-        createPropSymbols(response);
-        createSequenceControls();
-    });
-};
-
-//function to retrieve the data and place it on the map
-function getDataOld(){
-    //load the data
-    $.getJSON("data/StatesFireData.geojson", function(response){
-        //create marker options
-        var geojsonMarkerOptions = {
-            radius: 5,
-            fillColor: "#990000",
-            color: "#000",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.8
-        };
-
-        //create custom icon
-        var fireIcon = L.icon({
-            iconUrl: 'img/fire.png',
-
-            iconSize:     [60, 70], // size of the icon
-            iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
-            popupAnchor:  [-2, -50] // point from which the popup should open relative to the iconAnchor
-        });
-
-        //create a Leaflet GeoJSON layer and add it to the map
-        L.geoJson(response, {
-            pointToLayer: function (feature, latlng){
-                return L.circleMarker(latlng, geojsonMarkerOptions);
-                //return L.marker(latlng, {icon: fireIcon});
-            },
-            onEachFeature: function onEachFeature(feature, layer) {
-                //no property named popupContent; instead, create html string with all properties
-                var popupContent = "";
-                if (feature.properties) {
-                    //loop to add feature property names and values to html string
-                    for (var property in feature.properties){
-                        popupContent += "<p>" + property + ": " + feature.properties[property] + "</p>";
-                    }
-                    layer.bindPopup(popupContent);
-                };
-            }
-        }).addTo(map);
+        createPropSymbols(response, attributes);
+        createSequenceControls(attributes);
     });
 };
 
