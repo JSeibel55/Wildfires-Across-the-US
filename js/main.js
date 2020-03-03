@@ -8,7 +8,7 @@ var minValue;
 function createMap(){
     //create the map
     map = L.map('mapid', {
-        center: [40, -95],
+        center: [38, -96],
         zoom: 4.5
     });
 
@@ -57,11 +57,8 @@ function calcPropRadius(attValue) {
 //Convert markers to circle markers
 function pointToLayer(feature, latlng, attributes){
     // Determine which attribute to visualize with proportional symbols
-    //var attribute = "2018 Acres Burned";
-    //var attribute2 = "2018 Number of Fires";
     //Assign the current attribute based on the first index of the attributes array
     var attribute = attributes[0];
-    //console.log(attribute);
 
     //create marker options
     var options = {
@@ -82,14 +79,7 @@ function pointToLayer(feature, latlng, attributes){
     //create circle marker layer
     var layer = L.circleMarker(latlng, options);
 
-    //build popup content string starting with state
-    var popupContent = "<p><b>State:</b> " + feature.properties.State + "</p>";
-
-    //add formatted attribute to popup content string
-    var year = attribute.split(" ")[0];
-    popupContent += "<p><b>Acres burned in " + year + ":</b> " + feature.properties[attribute] + " acres</p>";
-    //var year = attribute2.split(" ")[0];
-    //popupContent += "<p><b>Number of Fires in " + year + ":</b> " + feature.properties[attribute2];
+    var popupContent = createPopupContent(feature.properties, attribute);
 
     //bind the popup to the circle marker
     layer.bindPopup(popupContent, {
@@ -108,6 +98,38 @@ function createPropSymbols(data, attributes){
             return pointToLayer(feature, latlng, attributes);
         }
     }).addTo(map);
+};
+
+// Resize proportional symbols according to new attribute values
+function updatePropSymbols(attribute){
+    map.eachLayer(function(layer){
+        if (layer.feature && layer.feature.properties[attribute]){
+            //access feature properties
+            var props = layer.feature.properties;
+
+            //update each feature's radius based on new attribute values
+            var radius = calcPropRadius(props[attribute]);
+            layer.setRadius(radius);
+
+            var popupContent = createPopupContent(props, attribute);
+            
+            //update popup content
+            popup = layer.getPopup();
+            popup.setContent(popupContent).update();
+        };
+    });
+};
+
+// Creates text for the popups in the prop symbols
+function createPopupContent(properties, attribute){
+    //add city to popup content string
+    var popupContent = "<p><b>State:</b> " + properties.State + "</p>";
+
+    //add formatted attribute to panel content string
+    var year = attribute.split(" ")[0];
+    popupContent += "<p><b>Acres burned in " + year + ":</b> " + properties[attribute] + " acres</p>";
+
+    return popupContent;
 };
 
 // Create new sequence controls
@@ -144,7 +166,6 @@ function createSequenceControls(attributes){
             //If past the first attribute, wrap around to last attribute
             index = index < 0 ? 10 : index;
         };
-        //console.log(index);
 
         //Update slider
         $('.range-slider').val(index);
@@ -161,32 +182,7 @@ function createSequenceControls(attributes){
     }); 
 };
 
-// Resize proportional symbols according to new attribute values
-function updatePropSymbols(attribute){
-    map.eachLayer(function(layer){
-        if (layer.feature && layer.feature.properties[attribute]){
-            //access feature properties
-            var props = layer.feature.properties;
-
-            //update each feature's radius based on new attribute values
-            var radius = calcPropRadius(props[attribute]);
-            layer.setRadius(radius);
-
-            //add city to popup content string
-            var popupContent = "<p><b>State:</b> " + props.State + "</p>";
-
-            //add formatted attribute to panel content string
-            var year = attribute.split(" ")[0];
-            popupContent += "<p><b>Acres burned in " + year + ":</b> " + props[attribute] + " acres</p>";
-
-            //update popup content
-            popup = layer.getPopup();
-            popup.setContent(popupContent).update();
-        };
-    });
-};
-
-//Above Example 3.10...Step 3: build an attributes array from the data
+//Build an attributes array from the data
 function processData(data){
     //empty array to hold attributes
     var attributes = [];
