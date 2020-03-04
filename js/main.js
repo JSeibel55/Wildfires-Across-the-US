@@ -2,14 +2,15 @@
 
 //declare map var in global scope
 var map;
-var minValue;
+var minValue = 250;
+var dataStats = {min:10000, max:2000000, mean:750000};
 
 //Function to instantiate the Leaflet map
 function createMap(){
     //create the map
     map = L.map('mapid', {
         center: [38, -96],
-        zoom: 4.5
+        zoom: 4
     });
 
     //add OSM base tilelayer
@@ -21,7 +22,7 @@ function createMap(){
     getData();
 };
 
-function calcMinValue(data){
+function calcStats(data){
     //create empty array to store all data values
     var allValues = [];
     
@@ -36,17 +37,19 @@ function calcMinValue(data){
           }
     }
     
-    //get minimum value of our array
-    var minValue = Math.min(...allValues)
-    
-    minValue = 500;
-    return minValue;
+    //get min, max, mean stats for our array
+    //dataStats.max = Math.min(...allValues)
+    //dataStats.max = Math.max(...allValues);
+
+    //calculate mean
+    var sum = allValues.reduce(function(a, b){return a+b;});
+    //dataStats.mean = sum/ allValues.length;
 }
 
 //calculate the radius of each proportional symbol
 function calcPropRadius(attValue) {    
     //constant factor adjusts symbol sizes evenly
-    var minRadius = 1;
+    minRadius = .5;
     
     //Flannery Appearance Compensation formula
     var radius = 1.0083 * Math.pow(attValue/minValue,0.5715) * minRadius;
@@ -103,7 +106,7 @@ function createPropSymbols(data, attributes){
 // Resize proportional symbols according to new attribute values
 function updatePropSymbols(attribute){
     map.eachLayer(function(layer){
-        if (layer.feature && layer.feature.properties[attribute]){
+        if (layer.feature ){ //&& layer.feature.properties[attribute]
             //access feature properties
             var props = layer.feature.properties;
 
@@ -134,8 +137,29 @@ function createPopupContent(properties, attribute){
 
 // Create new sequence controls
 function createSequenceControls(attributes){
+    var SequenceControl = L.Control.extend({
+        options: {
+            position: 'bottomleft'
+        },
+
+        onAdd: function () {
+            // create the control container div with a particular class name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
+
+            //create range input element (slider)
+            $(container).append('<input class="range-slider" type="range">');
+
+            //add skip buttons
+            $(container).append('<button class="step" id="reverse" title="Reverse">Reverse</button>');
+            $(container).append('<button class="step" id="forward" title="Forward">Forward</button>');
+
+            return container;
+        }
+    });
+    map.addControl(new SequenceControl());
+
     //create range input element (slider)
-    $('#panel').append('<input class="range-slider" type="range">');
+    // $('#panel').append('<input class="range-slider" type="range">');
 
     //set slider attributes
     $('.range-slider').attr({
@@ -145,8 +169,8 @@ function createSequenceControls(attributes){
         step: 1
     });
 
-    $('#panel').append('<button class="step" id="reverse">Reverse</button>');
-    $('#panel').append('<button class="step" id="forward">Forward</button>');
+    // $('#panel').append('<button class="step" id="reverse">Reverse</button>');
+    // $('#panel').append('<button class="step" id="forward">Forward</button>');
     $('#reverse').html('<img src="img/step-backward-solid.svg">');
     $('#forward').html('<img src="img/step-forward-solid.svg">');
 
@@ -171,6 +195,7 @@ function createSequenceControls(attributes){
         $('.range-slider').val(index);
         console.log(attributes[index]);
         updatePropSymbols(attributes[index]);
+        updateLegend(attributes[index]);
     });
 
     //Input listener for slider
@@ -179,7 +204,65 @@ function createSequenceControls(attributes){
         var index = $(this).val();
         console.log(attributes[index]);
         updatePropSymbols(attributes[index]);
+        updateLegend(attributes[index]);
     }); 
+};
+
+function updateLegend(attribute) {
+    var legend = document.getElementById("year-step");
+    var year = attribute.split(" ")[0];
+    legend.innerHTML = "<b>Acres burned in " + year;
+}
+
+function createLegend(attribute){
+    var LegendControl = L.Control.extend({
+        options: {
+            position: 'bottomright'
+        },
+
+        onAdd: function () {
+            // create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'legend-control-container');
+
+            var year = attribute.split(" ")[0];
+            $(container).append('<p id="year-step" style="font-size: 15px"><b>Acres burned in ' + year + '</p>');
+
+            //Start attribute legend svg string
+            var svg = '<svg id="attribute-legend" width="270px" height="180px">';
+
+            //array of circle names to base loop on
+            var circles = ["max", "mean", "min"];
+
+            //Loop to add each circle and text to svg string
+            for (var i=0; i<circles.length; i++){
+                //Assign the r and cy attributes
+                var radius = calcPropRadius(dataStats[circles[i]]);
+                var cy = 180 - radius;
+
+                //circle string
+                svg += '<circle class="legend-circle" id="' + circles[i] + '" r="' + radius + '"cy="' + cy + '" fill="#990000" fill-opacity="0.8" stroke="#000000" cx="88"/>';
+
+                //evenly space out labels
+                var textY = i * 60 + 40;
+
+                //text string
+                svg += '<text id="' + circles[i] + '-text" x="180" y="' + textY + '">' + Math.round(dataStats[circles[i]]*100)/100 + " acres" + '</text>';
+            };
+
+            //close svg string
+            svg += "</svg>";
+
+            //add attribute legend svg to container
+            $(container).append(svg);
+
+            console.log(dataStats.max, dataStats.min, dataStats.mean)
+
+            return container;
+        }
+    });
+    map.addControl(new LegendControl());
+
+    //updateLegend(attribute[0]);
 };
 
 //Build an attributes array from the data
@@ -208,9 +291,10 @@ function getData(map){
         //create an attributes array
         var attributes = processData(response);
             
-        minValue = calcMinValue(response);
+        calcStats(response);
         createPropSymbols(response, attributes);
         createSequenceControls(attributes);
+        createLegend(attributes[0]);
     });
 };
 
