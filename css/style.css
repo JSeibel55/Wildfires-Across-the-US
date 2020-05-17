@@ -1,7 +1,12 @@
+body {
+    background-color: rgb(230, 230, 230);
+}
+
 #mapid {
     height: 90vh;
     width: 80%;
     display: inline-block;
+    border: 2px solid rgb(75, 75, 75);
 }
 #panel {
     width: 18%;
@@ -9,8 +14,8 @@
     vertical-align: top;
     text-align: left;
     padding: 10px;
-    font-family: "Arial";
-    color: rgb(78, 78, 78);
+    font-family: "Arial", sans-serif;
+    color: rgb(75, 75, 75);
 }
 #title-panel {
     width: 80%;
@@ -20,8 +25,8 @@
     text-align: center;
     font-size: 36px;
     font-weight: bold;
-    font-family: "Arial";
-    color: rgb(68, 68, 68);
+    font-family: "Arial", sans-serif;
+    color: rgb(75, 75, 75);
 }
 .range-slider {
     width: 250px;
@@ -62,7 +67,7 @@
     line-height: 5px;
     text-align: center;
     border: solid gray 1px;
-    font-family: "Arial";
+    font-family: "Arial", sans-serif;
 }
 .year-step {
     font-size: 30px;
