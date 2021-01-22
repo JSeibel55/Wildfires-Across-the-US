@@ -6,6 +6,7 @@
             <title></title>
 
         <!--put your external stylesheet links here-->
+        <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" href="lib/leaflet/leaflet.css">
         <link rel="stylesheet" href="css/style.css">
 
@@ -15,10 +16,22 @@
     </head>
 
     <body>
+        <!-- Mobil Modal -->
+        <div class="modal fade" id="mobile-screen" tabindex="-1" role="dialog" aria-labelledby="mobile-screen" aria-hidden="true" data-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content" id="mobile-screen-content">
+                    <div class="modal-body">
+                        <h6 style="font-weight: bold;">Please use a laptop or desktop.</h6>
+                        <p>At this time, the Wildfires Across the US, is not built to be viewed on a mobile device.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!--put your initial page content here-->
         <div id="title-panel">Wildland Fires across the United States</div>
         <div id="mapid"></div>
-        <div id="panel">
+        <div id="text-panel">
             <p>
                 A wildland fire or wildfire is an uncontrolled fire in an area of combustible vegetation. 
                 Every year, millions of acres across the United States are burned by wildfires through natural and human caused incedents. 
@@ -44,6 +57,7 @@
 
         <!--put your external script links here-->
         <script type="text/javascript" src="lib/jquery-3.4.1.js"></script>
+        <script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="lib/leaflet/leaflet.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
     </body>

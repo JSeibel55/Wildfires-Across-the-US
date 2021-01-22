@@ -12,7 +12,7 @@ function createMap(){
     //create the map
     myBounds = new L.LatLngBounds(new L.LatLng(60, 0), new L.LatLng(30, 0));
     map = L.map('mapid', {
-        center: [38, -96],
+        center: [38, -90],
         zoom: 4,
         minZoom: 3,
         maxZoom: 12,
@@ -432,4 +432,12 @@ function getData(map){
     });
 };
 
+// Open popup wanring to view on desktop if user opens in mobile
+$(window).on("resize load", function () {
+    if ($( window ).width() <= 600) {
+        $('#mobile-screen').modal('show');
+    } else if ($( window ).width() > 600){
+        $('#mobile-screen').modal('hide');
+    }
+});
 $(document).ready(createMap);

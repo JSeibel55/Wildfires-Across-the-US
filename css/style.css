@@ -4,39 +4,49 @@ body {
 
 #mapid {
     height: 90vh;
-    width: 80%;
+    width: 70%;
     display: inline-block;
     border: 2px solid rgb(75, 75, 75);
+    margin: 0 0 0 10px;
 }
-#panel {
-    width: 18%;
+#text-panel {
+    width: 25%;
     display: inline-block;
     vertical-align: top;
     text-align: left;
-    padding: 10px;
+    margin: 0 0 0 20px;
     font-family: "Arial", sans-serif;
     color: rgb(75, 75, 75);
 }
+
 #title-panel {
-    width: 80%;
+    width: 80vw;
     height: 7vh;
     display: inline-block;
     vertical-align: top;
     text-align: center;
-    font-size: 36px;
+    font-size: 5vh;
     font-weight: bold;
     font-family: "Arial", sans-serif;
     color: rgb(75, 75, 75);
 }
 .range-slider {
-    width: 250px;
+    width: 20vw;
 }
 .step {
-	width: 40px;
+    width: 6vh;
+    height: 5vh;
+    margin-top: -2px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    background-color: rgb(192, 192, 192);
 }
 .step img {
-	width: 90%;
+	width: 70%;
     height: auto;
+    margin-top: -10px;
+    outline: none;
 }
 #forward {
     float: right;
@@ -49,8 +59,8 @@ body {
     margin: 0.2em 0;
 }
 .sequence-control-container {
-    width: 350px;
-    height: 30px;
+    width: 30vw;
+    height: 50px;
     background-color: rgba(255,255,255,0.8);
     border-radius: 10px;
     padding: 10px;
@@ -70,7 +80,7 @@ body {
     font-family: "Arial", sans-serif;
 }
 .year-step {
-    font-size: 30px;
+    font-size: 20px;
 }
 
 .leaflet-control-layers-toggle:after{ 
@@ -90,4 +100,26 @@ body {
     border-radius: 10px;
     padding: 10px;
     border: solid gray 1px;
+}
+
+/* Modal that activates if user is on mobile device*/
+#mobile-screen {
+    background-color:#494949;
+}
+#mobile-screen-content {
+    background-color:#dadfe1;
+    text-align: center
+}
+
+@media screen and (max-width: 1150px) {
+    #text-panel {font-size: 2vh;}
+    .range-slider { width: 15vw;}
+}
+@media screen and (max-width: 1000px) {
+    #mapid {width: 95vw}
+    #text-panel {width: 90vw; margin-top: 10px;}
+    .step { width: 4vw; margin-top: -2px;}
+}
+@media screen and (max-width: 850px) {
+    #title-panel {width: 90vw; height: 8vh; font-size: 4vw}
 }
