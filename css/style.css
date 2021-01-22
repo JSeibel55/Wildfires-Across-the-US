@@ -108,7 +108,9 @@ body {
 }
 #mobile-screen-content {
     background-color:#dadfe1;
-    text-align: center
+    text-align: center;
+    margin: auto;
+    width: 80vw;
 }
 
 @media screen and (max-width: 1150px) {
